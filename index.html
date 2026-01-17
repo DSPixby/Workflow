@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>US Immigration Workflow - Service Account Integration</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Include jsrsasign library for JWT signing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.8.6/jsrsasign-all-min.js"></script>
+  </head>
+  <body>
+    <!-- Configuration Modal -->
+    <div class="config-modal" id="configModal">
+      <div class="config-content">
+        <div class="config-title">🔐 Service Account Configuration</div>
+        <div class="config-description">
+          Paste your service account JSON credentials to connect to Google Sheets securely.
+        </div>
+
+        <div class="config-warning">
+          <strong>⚠️ Security Note:</strong> Your service account credentials contain a private key.
+          Only use this on:
+          <ul style="margin: 8px 0 0 20px">
+            <li>Password-protected sites (Netlify password protection)</li>
+            <li>Internal company networks</li>
+            <li>Local development</li>
+          </ul>
+          Do NOT deploy publicly with credentials visible in the code.
+        </div>
+
+        <div id="configError" class="error-message" style="display: none"></div>
+        <div id="configSuccess" class="success-message" style="display: none"></div>
+
+        <div class="config-field">
+          <label class="config-label">Service Account JSON</label>
+          <textarea
+            id="serviceAccountJson"
+            class="config-textarea"
+            placeholder="Paste your entire JSON file content here, including { } brackets"
+          ></textarea>
+          <div class="config-hint">
+            Paste the complete JSON from your downloaded credentials file
+          </div>
+        </div>
+
+        <div class="config-field">
+          <label class="config-label">Spreadsheet ID</label>
+          <input
+            type="text"
+            id="spreadsheetIdInput"
+            class="config-input"
+            value="1WM_xGzj2KnBh1e8TRjnZD4BpxT13DHA8eiHgHwaznH8"
+          />
+          <div class="config-hint">From your Google Sheets URL</div>
+        </div>
+
+        <div class="config-field">
+          <label class="config-label">Sheet Names (comma-separated)</label>
+          <input
+            type="text"
+            id="sheetNamesInput"
+            class="config-input"
+            value="Client Types,Services,Service Mappings"
+          />
+          <div class="config-hint">The names of the tabs in your spreadsheet</div>
+        </div>
+
+        <div class="config-buttons">
+          <button class="config-btn secondary" onclick="useSampleData()">Use Sample Data</button>
+          <button class="config-btn primary" onclick="saveConfiguration()">
+            Connect & Load Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <div class="nav-left">
+        <div class="logo">⚖️ Immigration Workflow</div>
+        <div class="workflow-title">Service Account Integration</div>
+        <div class="sync-status" id="syncStatus">
+          <span>●</span>
+          <span id="syncStatusText">Not Connected</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="nav-btn" onclick="showConfigModal()">⚙️ Settings</button>
+        <button class="nav-btn success" onclick="syncFromSheet()">🔄 Sync from Sheet</button>
+        <button class="nav-btn" onclick="autoLayout()">📐 Auto Layout</button>
+        <button class="nav-btn" onclick="resetView()">🔄 Reset</button>
+      </div>
+    </div>
+
+    <div class="main-container">
+      <div class="left-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">Nodes</div>
+          <div class="filter-group">
+            <button class="filter-btn active" onclick="filterNodes('all')">All</button>
+            <button class="filter-btn" onclick="filterNodes('clients')">Clients</button>
+            <button class="filter-btn" onclick="filterNodes('services')">Services</button>
+          </div>
+          <input
+            type="text"
+            id="searchNodes"
+            class="search-box"
+            placeholder="Search..."
+            oninput="searchNodes()"
+          />
+        </div>
+        <div class="nodes-list" id="nodesList"></div>
+      </div>
+
+      <div class="canvas-container">
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomIn()">+</button>
+          <button class="zoom-btn" onclick="resetZoom()">◎</button>
+          <button class="zoom-btn" onclick="zoomOut()">−</button>
+        </div>
+
+        <button id="clearSelectionBtn" onclick="clearActiveSelection()">✕ Clear</button>
+
+        <div id="canvas">
+          <svg class="connection-svg" id="svg"></svg>
+        </div>
+
+        <div class="stats-panel">
+          <div class="stats-title">📊 Statistics</div>
+          <div class="stats-content">
+            <div class="stat-row">
+              <span>Connections:</span>
+              <span class="stat-value" id="connectionCount">0</span>
+            </div>
+            <div class="stat-row">
+              <span>Avg Services:</span>
+              <span class="stat-value" id="avgServices">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tooltip"></div>
+    <div id="loading" style="display: none">
+      <div class="loading-spinner"></div>
+      <div class="loading-text" id="loadingText">Loading...</div>
+    </div>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
